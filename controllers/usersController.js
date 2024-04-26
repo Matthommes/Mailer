@@ -152,7 +152,6 @@ const resetPasswordRequest = async (req, res) => {
     const email = req.body.email;
 
     // CHECK IF USER EXIST IN DB
-
     const user = await prisma.user.findUnique({
       where: email,
     });
