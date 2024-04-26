@@ -1,6 +1,6 @@
 const HttpStatusCodes = require("../constants/HttpStatusCodes.js");
 const jwt = require("jsonwebtoken");
-const nodemailer = require("nodemailer"); 
+const nodemailer = require("nodemailer");
 
 const jwtSecret = process.env.JWT_SECRET;
 
@@ -14,7 +14,7 @@ const emailDetails = async (req, res) => {
       });
     }
 
-    const token = generateEmailCredentialsToken(email, { password }); 
+    const token = generateEmailCredentialsToken(email, { password });
     res.status(HttpStatusCodes.OK).json({
       success: true,
       message: "Credentials saved successfully",
@@ -32,7 +32,10 @@ const emailDetails = async (req, res) => {
 
 const sendEmail = async (req, res) => {
   const { message, subject, recipient } = req.body;
-  
+  if (!message || !subject || !recipient)
+    return res
+      .status(HttpStatusCodes.BAD_REQUEST)
+      .json({ success: false, message: "Please input all fields." });
   try {
     const transporter = nodemailer.createTransport({
       service: "gmail",

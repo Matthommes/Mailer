@@ -39,23 +39,29 @@ const authenticateUser = async (req, res, next) => {
 };
 
 const authenticateWithEmailCredentials = (req, res, next) => {
-  const token = req.cookies.emailCredentialsToken;
-  if (!token) {
-    return res
-      .status(HttpStatusCodes.UNAUTHORIZED)
-      .json({ message: "Email credentials token not provided" });
+  let token;
+  if (
+    req.headers.authorization &&
+    req.headers.authorization.startsWith("Bearer")
+  ) {
+    try {
+      token = req.headers.authorization.split(" ")[1];
+     
+      const decoded = jwt.verify(token, jwtSecret);
+      req.emailCredentials = decoded;
+      next();
+    } catch (error) {
+      console.error(error);
+      return res
+        .status(HttpStatusCodes.UNAUTHORIZED)
+        .json({ message: "Invalid email credentials token" });
+    }
   }
 
-  try {
-    const decoded = jwt.verify(token, jwtSecret);
-    req.emailCredentials = decoded;
-    next();
-  } catch (error) {
-    console.error(error);
+  if (!token)
     return res
       .status(HttpStatusCodes.UNAUTHORIZED)
-      .json({ message: "Invalid email credentials token" });
-  }
+      .json({ success: false, message: "Unauthorized, no token." });
 };
 
 module.exports = { authenticateUser, authenticateWithEmailCredentials };
